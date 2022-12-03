@@ -34,7 +34,7 @@ static RespondPlay win_response(OpponentPlay other) {
         case OPPONENT_ROCK:    return RESPOND_PAPER;
         case OPPONENT_PAPER:   return RESPOND_SCISSOR;
         case OPPONENT_SCISSOR: return RESPOND_ROCK;
-        default: __builtin_unreachable();
+        default: assert(false && "unreachable");
     }
 }
 
@@ -43,7 +43,7 @@ static RespondPlay tie_response(OpponentPlay other) {
         case OPPONENT_ROCK:    return RESPOND_ROCK;
         case OPPONENT_PAPER:   return RESPOND_PAPER;
         case OPPONENT_SCISSOR: return RESPOND_SCISSOR;
-    default: __builtin_unreachable();
+    default: assert(false && "unreachable");
     }
 }
 
@@ -52,7 +52,7 @@ static RespondPlay lose_response(OpponentPlay other) {
         case OPPONENT_PAPER:   return RESPOND_ROCK;
         case OPPONENT_SCISSOR: return RESPOND_PAPER;
         case OPPONENT_ROCK:    return RESPOND_SCISSOR;
-    default: __builtin_unreachable();
+    default: assert(false && "unreachable");
     }
 }
 
@@ -61,7 +61,7 @@ static RespondPlay response_shape(OpponentPlay other, RespondOutcome mine) {
     case RESPOND_LOSE: return lose_response(other);
     case RESPOND_DRAW: return tie_response(other);
     case RESPOND_WIN:  return win_response(other);
-    default: __builtin_unreachable();
+    default: assert(false && "unreachable");
     }
 }
 
