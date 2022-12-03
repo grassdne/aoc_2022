@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef enum {
     OPPONENT_ROCK = 'A',
@@ -75,7 +76,7 @@ static int outcome_score(RespondOutcome mine) {
 
 int main(void) {
     FILE *f = fopen("input.txt", "r");
-    if (f == NULL) fprintf(stderr, "unable to open input file\n");
+    if (f == NULL) fprintf(stderr, "unable to open input file\n"), exit(1);
     char line[256];
     { // PART ONE
         int score = 0;
