@@ -1,7 +1,7 @@
 #!/bin/sh
 
 day() {
-    echo "DAY $1"
+    echo "\033[0;32mDAY $1\033[0m"
     cd $1
 }
 cleanup() {
