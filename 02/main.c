@@ -95,9 +95,9 @@ int main(void) {
 
         while (fgets(line, sizeof(line), f) != NULL) {
             const OpponentPlay other = line[0];
-            const RespondPlay mine = line[2];
+            const RespondOutcome mine = line[2];
 
-            score += SHAPE_SCORE[response_shape(other, mine)] + outcome_score(mine);
+            score += SHAPE_SCORE[response_shape(other, mine)] + (int)outcome_score(mine);
         }
 
         printf("[PART TWO] Total score: %d\n", score);
