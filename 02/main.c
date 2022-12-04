@@ -69,8 +69,8 @@ static int outcome_score(RespondOutcome mine) {
     }__builtin_unreachable();
 }
 
-int main(void) {
-    FILE *f = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+    FILE *f = fopen(argc >= 2 ? argv[1] : "input.txt", "r");
     if (f == NULL) fprintf(stderr, "unable to open input file\n"), exit(1);
     char line[256];
     { // PART ONE

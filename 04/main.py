@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 
 def is_superrange(a, b):
     """ a starts before b starts and ends after b ends """
@@ -9,7 +10,7 @@ def is_overlap(a, b):
     return a[1] >= b[0] and a[0] <= b[1] 
 
 def main():
-    f = open("input.txt")
+    f = open("input.txt" if len(sys.argv) < 2 else sys.argv[1])
     n_superrange = 0
     n_overlaps = 0
     for line in f:

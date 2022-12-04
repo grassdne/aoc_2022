@@ -85,7 +85,11 @@ func part_2(file *os.File) {
 }
 
 func main() {
-    file, err := os.Open("input.txt")
+    input_file := "input.txt" 
+    if len(os.Args) >= 2 {
+        input_file = os.Args[1]
+    }
+    file, err := os.Open(input_file)
     if err != nil {
         log.Fatal(err)
     }
