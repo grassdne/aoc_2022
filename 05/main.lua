@@ -1,22 +1,28 @@
 #!/usr/bin/env luajit
-local infile = arg[1] or "input.txt"
 
-local f = assert(io.open(infile))
+imap = function(a, f)
+    local t = {}
+    for i,v in ipairs(a) do t[i] = f(v) end
+    return t
+end
+reverse = function(a)
+    local t = {}
+    for i=#a, 1, -1 do t[#t+1] = a[i] end
+    return t
+end
 
 local get_stacks = function(lines)
     local stacks = {}
     for i=2, #lines[1], 4 do
         -- [A] [B] [C] [D]
         --  ^   ^   ^   ^
-        local stack = {}
-        for ln = #lines, 1, -1 do
-            local crate = lines[ln]:sub(i,i)
-            if crate ~= " " then table.insert(stack, crate) end
-        end
-        table.insert(stacks, stack)
+        table.insert(stacks, imap(reverse(lines), function(ln) return ln:sub(i,i) ~= " " and ln:sub(i,i) or nil end))
     end
     return stacks
 end
+
+local infile = arg[1] or "input.txt"
+local f = assert(io.open(infile))
 
 local items = {}
 for ln in f:lines() do
@@ -32,25 +38,14 @@ for ln in f:lines() do
     local move, from, to = ln:match("move (%d*) from (%d*) to (%d*)")
     if move then
         move, from, to = tonumber(move), tonumber(from), tonumber(to)
-        -- PART 1
         for i=1, move do
             table.insert(stacks_p1[to], table.remove(stacks_p1[from]))
-        end
-        -- PART 2
-        local n = #stacks_p2[from] - move + 1
-        for i=1, move do
-            table.insert(stacks_p2[to], table.remove(stacks_p2[from], n))
+            table.insert(stacks_p2[to], table.remove(stacks_p2[from], #stacks_p2[from] - move + 1))
         end
     end
 end
 
-local tops = function(stacks)
-    local s = ""
-    for i,v in ipairs(stacks) do s=s..v[#v] end
-    return s
-end
-
-io.write("[PART ONE] (crate on top of each stack): ", tops(stacks_p1), "\n")
-io.write("[PART ONE] (crate on top of each stack): ", tops(stacks_p2), "\n")
+io.write("[PART ONE] (crate on top of each stack): ", table.concat(imap(stacks_p1, function(a) return a[#a] end)), "\n")
+io.write("[PART TWO] (crate on top of each stack): ", table.concat(imap(stacks_p2, function(a) return a[#a] end)), "\n")
 
 f:close()
