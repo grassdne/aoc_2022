@@ -5,17 +5,16 @@
 
 int solve(FILE *f, const char *part, int N) {
     rewind(f);
-    for (;;) next: {
+    for2: {
         char items[ALPH] = {0};
         for (int i = 0; i < N; ++i) {
             char c = fgetc(f);
             if (c == EOF) return fprintf(stderr, "INVALID INPUT\n"), 1;
             if (++items[c - 'a'] > 1) {
                 fseek(f, -i, SEEK_CUR);
-                goto next;
+                goto for2;
             }
         }
-        break;
     }
     printf("[PART %s] start-of-packet detected: %ld\n", part, ftell(f));
     return 0;
