@@ -10,17 +10,29 @@ cleanup() {
 }
 
 day 01
-    ./main.lua
+    ./main.lua input.txt
 cleanup
 
 day 02
-    ./run.sh
+    ./build.sh && ./main input.txt
 cleanup
 
 day 03
-    go run main.go
+    go run main.go input.txt
 cleanup
 
 day 04
-    ./main.py
+    ./main.py input.txt
+cleanup
+
+day 05
+    ./main.lua input.txt
+cleanup
+
+day 06
+    ./build.sh && ./main input.txt
+cleanup
+
+day 08
+    cargo run input.txt
 cleanup
