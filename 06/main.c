@@ -5,14 +5,14 @@
 
 int solve(FILE *f, const char *part, int N) {
     rewind(f);
-    for2: {
+    try_next_seq: {
         char items[ALPH] = {0};
         for (int i = 0; i < N; ++i) {
             char c = fgetc(f);
             if (c == EOF) return fprintf(stderr, "INVALID INPUT\n"), 1;
             if (++items[c - 'a'] > 1) {
                 fseek(f, -i, SEEK_CUR);
-                goto for2;
+                goto try_next_seq;
             }
         }
     }
