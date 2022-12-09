@@ -16,7 +16,7 @@ int solve(FILE *f, const char *part, int N) {
             }
         }
     }
-    printf("[PART %s] start-of-packet detected: %ld\n", part, ftell(f));
+    printf("[PART %s]: %ld\n", part, ftell(f));
     return 0;
 }
 

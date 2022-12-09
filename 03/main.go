@@ -45,7 +45,7 @@ func part_1(file *os.File) {
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("[PART ONE] sum of priorities: %d\n", sum)
+    fmt.Printf("[PART ONE]: %d\n", sum)
 }
 
 func getCommonItem(lines [GROUP_SIZE][] byte) byte {
@@ -81,7 +81,7 @@ func part_2(file *os.File) {
         log.Fatal(err)
     }
 
-    fmt.Printf("[PART TWO] sum of priorities: %d\n", sum)
+    fmt.Printf("[PART TWO]: %d\n", sum)
 }
 
 func main() {

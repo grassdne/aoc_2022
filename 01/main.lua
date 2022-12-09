@@ -11,5 +11,5 @@ for n in io.lines(input_file) do
 end
 table.sort(elves)
 
-io.write("[PART ONE] How many Calories the Elf with the most snacks carries: ", elves[#elves], "\n")
-io.write("[PART TWO] How many Calories the top three prepared Elves carry: ", elves[#elves] + elves[#elves-1] + elves[#elves-2], "\n")
+io.write("[PART ONE]: ", elves[#elves], "\n")
+io.write("[PART TWO]: ", elves[#elves] + elves[#elves-1] + elves[#elves-2], "\n")

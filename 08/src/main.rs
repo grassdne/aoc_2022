@@ -37,6 +37,6 @@ fn main() {
         }
     }
 
-    println!("[PART ONE] {}", cols*rows - count);
-    println!("[PART TWO] {}", best_score);
+    println!("[PART ONE]: {}", cols*rows - count);
+    println!("[PART TWO]: {}", best_score);
 }

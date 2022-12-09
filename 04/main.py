@@ -22,8 +22,8 @@ def main():
         if is_overlap(pair[0], pair[1]) or is_overlap(pair[1], pair[0]):
             n_overlaps += 1
 
-    print("[PART ONE] # assignment pairs where one range fully contains other:", n_superrange)
-    print("[PART TWO] # assinment pairs where the ranges overlap:", n_overlaps)
+    print("[PART ONE]: ", n_superrange)
+    print("[PART TWO]: ", n_overlaps)
 
 if __name__ == '__main__':
     main()

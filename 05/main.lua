@@ -46,7 +46,7 @@ for ln in f:lines() do
     end
 end
 
-io.write("[PART ONE] (crate on top of each stack): ", table.concat(imap(stacks_p1, function(a) return a[#a] end)), "\n")
-io.write("[PART TWO] (crate on top of each stack): ", table.concat(imap(stacks_p2, function(a) return a[#a] end)), "\n")
+io.write("[PART ONE]: ", table.concat(imap(stacks_p1, function(a) return a[#a] end)), "\n")
+io.write("[PART TWO]: ", table.concat(imap(stacks_p2, function(a) return a[#a] end)), "\n")
 
 f:close()
