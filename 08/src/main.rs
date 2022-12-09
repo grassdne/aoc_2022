@@ -16,29 +16,27 @@ fn main() {
     let cols = items[0].len();
     let rows = items.len();
 
-    {
-        let mut count = 0;
-        let mut best_score = 0;
+    let mut count = 0;
+    let mut best_score = 0;
 
-        for (y, ln) in items.iter().enumerate() {
-            for (x, &it) in ln.iter().enumerate() {
-                let horz_greater = |i: usize| ln[i] >= it;
-                let vert_greater = |i: usize| items[i][x] >= it;
+    for (y, ln) in items.iter().enumerate() {
+        for (x, &it) in ln.iter().enumerate() {
+            let horz_greater = |i: usize| ln[i] >= it;
+            let vert_greater = |i: usize| items[i][x] >= it;
 
-                if (x+1..cols).any(horz_greater) && (0..x).any(horz_greater)
-                && (y+1..rows).any(vert_greater) && (0..y).any(vert_greater)) {
+            if (x+1..cols).any(horz_greater) && (0..x).any(horz_greater)
+                && (y+1..rows).any(vert_greater) && (0..y).any(vert_greater) {
                     count += 1;
-                }
-
-                let scenic_score = ((x+1..cols).find(|&i| horz_greater(i)).unwrap_or(cols-1) - x)
-                                 * ((y+1..rows).find(|&i| vert_greater(i)).unwrap_or(rows-1) - y)
-                                 * (x - (0..x).rev().find(|&i| horz_greater(i)).unwrap_or(0))
-                                 * (y - (0..y).rev().find(|&i| horz_greater(i)).unwrap_or(0));
-                best_score = best_score.max(scenic_score);
             }
+
+            let scenic_score = ((x+1..cols).find(|&i| horz_greater(i)).unwrap_or(cols-1) - x)
+                * ((y+1..rows).find(|&i| vert_greater(i)).unwrap_or(rows-1) - y)
+                * (x - (0..x).rev().find(|&i| horz_greater(i)).unwrap_or(0))
+                * (y - (0..y).rev().find(|&i| vert_greater(i)).unwrap_or(0));
+            best_score = best_score.max(scenic_score);
         }
-        
-        println!("[PART ONE] {}", cols*rows - count);
-        println!("[PART TWO] {}", best_score);
     }
+
+    println!("[PART ONE] {}", cols*rows - count);
+    println!("[PART TWO] {}", best_score);
 }
