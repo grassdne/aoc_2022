@@ -9,7 +9,7 @@ fn push_dir(lines: &mut Peekable<Lines>, sizes: &mut Vec<u32>) -> u32 {
         let cmd = lines.next().unwrap();
         match &cmd[2..4] {
             "cd" => {
-                if &cmd[5..] == ".." {
+                if cmd.ends_with("..") {
                     break;
                 } else {
                     size += push_dir(lines, sizes);
@@ -17,13 +17,10 @@ fn push_dir(lines: &mut Peekable<Lines>, sizes: &mut Vec<u32>) -> u32 {
             }
             "ls" => {
                 loop {
-                    match lines.peek().map(|ln| ln.split_once(' ').unwrap()) {
-                        Some(("dir", _name)) => { lines.next(); }
-                        Some(("$", _cd)) => break,
-                        Some((sz, _name)) => {
-                            size += sz.parse::<u32>().unwrap();
-                            lines.next();
-                        }
+                    match lines.next_if(|ln| !ln.starts_with("$"))
+                        .map(|ln| ln.split_once(' ').unwrap()) {
+                        Some(("dir", _name)) => continue,
+                        Some((sz, _name)) => size += sz.parse::<u32>().unwrap(),
                         None => break,
                     };
                 }
