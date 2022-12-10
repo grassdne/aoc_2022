@@ -106,31 +106,28 @@ void free_field(Field *field) {
 }
 
 static Vec2 tail_step(Vec2 tail, Vec2 head) {
-    if (tail.y == head.y) {
-        if (tail.x + 1 < head.x) ++tail.x;
-        if (tail.x - 1 > head.x) --tail.x;
+#define STEP(t, h) do { \
+    if (t < h) ++t; else if (t > h) --t; \
+} while(0)
+
+    if (tail.x + 1 < head.x) {
+        ++tail.x;
+        STEP(tail.y, head.y);
     }
-    else if (tail.x == head.x) {
-        if (tail.y + 1 < head.y) ++tail.y;
-        if (tail.y - 1 > head.y) --tail.y;
+    if (tail.x - 1 > head.x) {
+        --tail.x;
+        STEP(tail.y, head.y);
     }
-    else if (tail.x + 1 < head.x) {
-        tail.y = head.y;
-        tail.x++;
+    if (tail.y + 1 < head.y) {
+        ++tail.y;
+        STEP(tail.x, head.x);
     }
-    else if (tail.x - 1 > head.x) {
-        tail.y = head.y;
-        tail.x--;
-    }
-    else if (tail.y + 1 < head.y) {
-        tail.x = head.x;
-        tail.y++;
-    }
-    else if (tail.y - 1 > head.y) {
-        tail.x = head.x;
-        tail.y--;
+    if (tail.y - 1 > head.y) {
+        --tail.y;
+        STEP(tail.x, head.x);
     }
     return tail;
+#undef STEP
 }
 
 void perform_simulation_1(Field field, Motion motions[MAX_MOTIONS]) {
@@ -196,15 +193,6 @@ int main(int argc, char **argv) {
 
     perform_simulation_2(field, motions);
     printf("[PART TWO]: %d\n", count_visited(field));
-
-#if 1
-    for (int y = field.size.y; y >= 0; y--) {
-        for (int x = 0; x < field.size.x; x++) {
-            printf("%c ", field.items[x+y*field.size.x] == POS_VISITED ? '#' : '.');
-        }
-        printf("\n");
-    }
-#endif
 
     free_field(&field);
     return 0;
