@@ -36,3 +36,11 @@ cleanup
 day 08
     cargo run input.txt
 cleanup
+
+day 09
+    ./build.sh && ./main input.txt
+cleanup
+
+day 10
+    ./main.lua input.txt
+cleanup
