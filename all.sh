@@ -33,6 +33,10 @@ day 06
     ./build.sh && ./main input.txt
 cleanup
 
+day 07
+    cargo run input.txt
+cleanup
+
 day 08
     cargo run input.txt
 cleanup
