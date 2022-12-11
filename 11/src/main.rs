@@ -97,26 +97,21 @@ fn perform_operation(old: u64, operation: &Operation) -> u64 {
 }
 
 fn round(monkeys: &mut Vec<Monkey>, divby: Option<u64>, modby: Option<u64>) {
+    // we can't directly iterate over monkeys or it's items because we
+    // need a mutable reference to monkeys inside of the loop
     for i in 0..monkeys.len() {
-        let monke = &mut monkeys[i];
-        let mut throws: Vec<(usize, u64)> = Vec::new();
-
-        for item in &monke.items {
-            monke.inspect_count += 1;
-            let mut item = perform_operation(*item, &monke.operation);
+        for j in 0..monkeys[i].items.len() {
+            monkeys[i].inspect_count += 1;
+            let mut item = perform_operation(monkeys[i].items[j], &monkeys[i].operation);
 
             if let Some(x) = divby { item /= x; }
             if let Some(x) = modby { item %= x; }
 
-            let throw_to = match item % monke.test_divisible {
-                0 => monke.if_true_throw_to,
-                _ => monke.if_false_throw_to
+            let throw_to = match item % monkeys[i].test_divisible {
+                0 => monkeys[i].if_true_throw_to,
+                _ => monkeys[i].if_false_throw_to
             };
-            throws.push((throw_to, item));
-        }
-
-        for &(to, item) in throws.iter() {
-            monkeys[to].items.push(item)
+            monkeys[throw_to].items.push(item);
         }
 
         monkeys[i].items.clear();
