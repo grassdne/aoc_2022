@@ -133,21 +133,23 @@ fn perform_operation(old: u64, operation: &Operation) -> u64 {
     }
 }
 
-fn round(monkeys: &mut Vec<Monkey>) {
+fn round(monkeys: &mut Vec<Monkey>, divby: Option<u64>, modby: Option<u64>) {
     for i in 0..monkeys.len() {
-        //println!("Monkey {i}");
         let monke = &mut monkeys[i];
         let mut throws: Vec<(usize, u64)> = Vec::new();
         for item in &monke.items {
-            //println!("  Monkey inspects an item with worry level {item}");
             monke.inspect_count += 1;
-            let item = perform_operation(*item, &monke.operation) / 3;
-            //println!("  Worry level becomes {item}");
+            let mut item = perform_operation(*item, &monke.operation);
+            if let Some(divby) = divby {
+                item /= divby;
+            }
+            if let Some(modby) = modby {
+                item %= modby;
+            }
             let throw_to = match item % monke.test_divisible {
                 0 => monke.if_true_throw_to,
                 _ => monke.if_false_throw_to
             };
-            //println!("  Item with worry level {item} thrown to {throw_to}");
             throws.push((throw_to, item));
         }
 
@@ -168,13 +170,23 @@ fn main() {
         eprintln!("failed reading file ({name}): {}", err);
         process::exit(1);
     });
-    if true {
+    {
         let mut monkeys = parse_monkey_file(&content);
         for _i in 0..20 {
-            round(&mut monkeys);
+            round(&mut monkeys, Some(3), None);
         }
         let mut counts: Vec<u64> = monkeys.iter().map(|m| m.inspect_count).collect();
         counts.sort();
         println!("[PART ONE]: {}", counts.iter().rev().take(2).product::<u64>())
+    }
+    {
+        let mut monkeys = parse_monkey_file(&content);
+        let modby = monkeys.iter().map(|m| m.test_divisible).product::<u64>();
+        for _i in 0..10_000 {
+            round(&mut monkeys, None, Some(modby));
+        }
+        let mut counts: Vec<u64> = monkeys.iter().map(|m| m.inspect_count).collect();
+        counts.sort();
+        println!("[PART TWO]: {}", counts.iter().rev().take(2).product::<u64>());
     }
 }
