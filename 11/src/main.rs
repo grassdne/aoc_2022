@@ -4,21 +4,10 @@ use std::process;
 use std::str::Lines;
 
 #[derive(Debug)]
-enum OpValue {
-    Num(u64),
-    Old,
-}
-
-#[derive(Debug)]
-enum Op {
-    Times, Plus
-}
-
-#[derive(Debug)]
-struct Operation {
-    left: OpValue,
-    op: Op,
-    right: OpValue,
+enum Operation {
+    Square,
+    Add(u64),
+    Mul(u64),
 }
 
 #[derive(Debug)]
@@ -38,30 +27,12 @@ const FMT_TEST:          &str = "  Test: divisible by ";
 const FMT_IF_TRUE:       &str = "    If true: throw to monkey ";
 const FMT_IF_FALSE:      &str = "    If false: throw to monkey ";
 
-fn build_opvalue(left: &str) -> Option<OpValue> {
-    match left {
-        "old" => Some(OpValue::Old),
-        n => Some(OpValue::Num(n.parse::<u64>().ok()?)),
-    }
-}
-
-fn build_op(op: &str) -> Option<Op> {
-    match op {
-        "*" => Some(Op::Times),
-        "+" => Some(Op::Plus),
-        _   => None,
-    }
-}
 
 fn build_operation(v: Vec<&str>) -> Option<Operation> {
     match v.as_slice() {
-        [left, op, right] => {
-            Some(Operation {
-                left: build_opvalue(left)?,
-                right: build_opvalue(right)?,
-                op: build_op(op)?
-            })
-        }
+        ["old", "*", "old"] => Some(Operation::Square),
+        ["old", "+", v]     => Some(Operation::Add(v.parse::<u64>().ok()?)),
+        ["old", "*", v]     => Some(Operation::Mul(v.parse::<u64>().ok()?)),
         _ => None,
     }
 }
@@ -117,19 +88,11 @@ fn parse_monkey_file(file: &str) -> Vec<Monkey> {
     monkeys
 }
 
-fn opvalue_substitute(old: u64, opval: &OpValue) -> u64 {
-    match opval {
-        OpValue::Old => old,
-        OpValue::Num(n) => *n,
-    }
-}
-
 fn perform_operation(old: u64, operation: &Operation) -> u64 {
-    let left = opvalue_substitute(old, &operation.left);
-    let right = opvalue_substitute(old, &operation.right);
-    match operation.op {
-        Op::Plus => left + right,
-        Op::Times => left * right,
+    match operation {
+        Operation::Square => old * old,
+        Operation::Add(x) => old + x,
+        Operation::Mul(x) => old * x,
     }
 }
 
@@ -137,15 +100,14 @@ fn round(monkeys: &mut Vec<Monkey>, divby: Option<u64>, modby: Option<u64>) {
     for i in 0..monkeys.len() {
         let monke = &mut monkeys[i];
         let mut throws: Vec<(usize, u64)> = Vec::new();
+
         for item in &monke.items {
             monke.inspect_count += 1;
             let mut item = perform_operation(*item, &monke.operation);
-            if let Some(divby) = divby {
-                item /= divby;
-            }
-            if let Some(modby) = modby {
-                item %= modby;
-            }
+
+            if let Some(x) = divby { item /= x; }
+            if let Some(x) = modby { item %= x; }
+
             let throw_to = match item % monke.test_divisible {
                 0 => monke.if_true_throw_to,
                 _ => monke.if_false_throw_to
