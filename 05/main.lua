@@ -38,14 +38,15 @@ for ln in f:lines() do
     local move, from, to = ln:match("move (%d*) from (%d*) to (%d*)")
     if move then
         move, from, to = tonumber(move), tonumber(from), tonumber(to)
+        local n = #stacks_p2[from] - move + 1
         for i=1, move do
             table.insert(stacks_p1[to], table.remove(stacks_p1[from]))
-            table.insert(stacks_p2[to], table.remove(stacks_p2[from], #stacks_p2[from] - move + 1))
+            table.insert(stacks_p2[to], table.remove(stacks_p2[from], n))
         end
     end
 end
 
-io.write("[PART ONE] (crate on top of each stack): ", table.concat(imap(stacks_p1, function(a) return a[#a] end)), "\n")
-io.write("[PART TWO] (crate on top of each stack): ", table.concat(imap(stacks_p2, function(a) return a[#a] end)), "\n")
+io.write("[PART ONE]: ", table.concat(imap(stacks_p1, function(a) return a[#a] end)), "\n")
+io.write("[PART TWO]: ", table.concat(imap(stacks_p2, function(a) return a[#a] end)), "\n")
 
 f:close()

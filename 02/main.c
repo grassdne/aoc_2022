@@ -34,7 +34,8 @@ static RespondPlay win_response(OpponentPlay other) {
         case OPPONENT_ROCK:    return RESPOND_PAPER;
         case OPPONENT_PAPER:   return RESPOND_SCISSOR;
         case OPPONENT_SCISSOR: return RESPOND_ROCK;
-    }__builtin_unreachable();
+        default: __builtin_unreachable();
+    }
 }
 
 static RespondPlay tie_response(OpponentPlay other) {
@@ -42,7 +43,8 @@ static RespondPlay tie_response(OpponentPlay other) {
         case OPPONENT_ROCK:    return RESPOND_ROCK;
         case OPPONENT_PAPER:   return RESPOND_PAPER;
         case OPPONENT_SCISSOR: return RESPOND_SCISSOR;
-    }__builtin_unreachable();
+        default: __builtin_unreachable();
+    }
 }
 
 static RespondPlay lose_response(OpponentPlay other) {
@@ -50,7 +52,8 @@ static RespondPlay lose_response(OpponentPlay other) {
         case OPPONENT_PAPER:   return RESPOND_ROCK;
         case OPPONENT_SCISSOR: return RESPOND_PAPER;
         case OPPONENT_ROCK:    return RESPOND_SCISSOR;
-    }__builtin_unreachable();
+        default: __builtin_unreachable();
+    }
 }
 
 static RespondPlay response_shape(OpponentPlay other, RespondOutcome mine) {
@@ -58,7 +61,8 @@ static RespondPlay response_shape(OpponentPlay other, RespondOutcome mine) {
     case RESPOND_LOSE: return lose_response(other);
     case RESPOND_DRAW: return tie_response(other);
     case RESPOND_WIN:  return win_response(other);
-    }__builtin_unreachable();
+    default: __builtin_unreachable();
+    }
 }
 
 static int outcome_score(RespondOutcome mine) {
@@ -66,7 +70,8 @@ static int outcome_score(RespondOutcome mine) {
     case RESPOND_LOSE: return SCORE_LOSS;
     case RESPOND_DRAW: return SCORE_DRAW;
     case RESPOND_WIN:  return SCORE_WIN;
-    }__builtin_unreachable();
+    default: __builtin_unreachable();
+    }
 }
 
 int main(int argc, char **argv) {
@@ -85,7 +90,7 @@ int main(int argc, char **argv) {
 
         }
 
-        printf("[PART ONE] Total score: %d\n", score);
+        printf("[PART ONE]: %d\n", score);
     }
 
     fseek(f, 0L, SEEK_SET);

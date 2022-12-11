@@ -6,7 +6,7 @@
 
 int solve(FILE *f, const char *part, int seq_size) {
     rewind(f);
-    bool found;
+    bool found = false;
     while (!found) {
         found = true;
         char chars_seen[ALPHABET_SIZE] = {0};
@@ -20,7 +20,7 @@ int solve(FILE *f, const char *part, int seq_size) {
             }
         }
     }
-    printf("[PART %s] start-of-packet detected: %ld\n", part, ftell(f));
+    printf("[PART %s]: %ld\n", part, ftell(f));
     return 0;
 }
 
