@@ -1,18 +1,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define ALPH 26
+#include <stdbool.h>
+#define ALPHABET_SIZE 26
 
-int solve(FILE *f, const char *part, int N) {
+int solve(FILE *f, const char *part, int seq_size) {
     rewind(f);
-    for2: {
-        char items[ALPH] = {0};
-        for (int i = 0; i < N; ++i) {
+    bool found;
+    while (!found) {
+        found = true;
+        char chars_seen[ALPHABET_SIZE] = {0};
+        for (int i = 0; i < seq_size; ++i) {
             char c = fgetc(f);
             if (c == EOF) return fprintf(stderr, "INVALID INPUT\n"), 1;
-            if (++items[c - 'a'] > 1) {
+            if (chars_seen[c - 'a']++ > 0) {
                 fseek(f, -i, SEEK_CUR);
-                goto for2;
+                found = false;
+                break;
             }
         }
     }
