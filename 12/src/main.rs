@@ -26,7 +26,7 @@ fn search(items: &mut Field, y: usize, x: usize, count: u32) {
         // Please Rust I just want to subtract 1
         if let (Ok(i), Ok(j)) = (usize::try_from(y as i32 + i), usize::try_from(x as i32 + j)) {
             if let Some(Some(&Tile{height: e, shortest_dist: s})) = items.get(i).map(|r| r.get(j)) {
-                if cur <= e + 1 && items[y][x].shortest_dist <= s {
+                if cur <= e + 1 && count < s {
                     search(items, i, j, count);
                 }
             }
