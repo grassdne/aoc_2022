@@ -56,3 +56,11 @@ cleanup
 day 12
     cargo run --release input.txt
 cleanup
+
+day 13
+    cargo run input.txt
+cleanup
+
+day 14
+    cargo run input.txt
+cleanup
