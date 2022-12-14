@@ -7,7 +7,7 @@ use std::vec;
 
 #[derive(Debug, Clone)]
 enum Item {
-    List(Vec<Item>),
+    Lst(Vec<Item>),
     Int(u32),
 }
 
@@ -32,7 +32,7 @@ impl Item {
                 s = s.strip_prefix(",").unwrap_or(s);
             }
             s = s.strip_prefix("]").unwrap();
-            (Item::List(items), s)
+            (Item::Lst(items), s)
         }
 
         let (list, tail) = get_list(s.trim());
@@ -44,22 +44,15 @@ impl Item {
         use Item::*;
         match (self, other) {
             (Int(a), Int(b)) => a.cmp(b),
-            (List(a), List(b)) => {
-                a.iter()
-                    .zip(b.iter())
-                    .map(|(a, b)| a.cmp(b))
-                    .skip_while(|x| x.is_eq())
-                    .next()
-                    .unwrap_or(a.len().cmp(&b.len()))
-            }
+            (Lst(a), Lst(b)) => a.iter()
+                                   .zip(b.iter())
+                                   .map(|(a, b)| a.cmp(b))
+                                   .skip_while(|x| x.is_eq())
+                                   .next()
+                                   .unwrap_or(a.len().cmp(&b.len())),
 
-            (List(_), Int(b)) => {
-                self.cmp(&List(vec![Int(*b)]))
-            }
-
-            (Int(_), List(_)) => {
-                other.cmp(self).reverse()
-            }
+            (Lst(_), Int(b)) => self.cmp(&Lst(vec![Int(*b)])),
+            (Int(_), Lst(_)) => other.cmp(self).reverse()
         }
     }
 }
@@ -88,8 +81,8 @@ fn main() {
                                             .map(|x| Item::parse_list(x))
                                             .collect();
 
-    let divider_a = Item::List(vec![Item::List(vec![Item::Int(2)])]);
-    let divider_b = Item::List(vec![Item::List(vec![Item::Int(6)])]);
+    let divider_a = Item::Lst(vec![Item::Lst(vec![Item::Int(2)])]);
+    let divider_b = Item::Lst(vec![Item::Lst(vec![Item::Int(6)])]);
     packets.push(divider_a.clone());
     packets.push(divider_b.clone());
 
