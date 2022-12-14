@@ -8,12 +8,6 @@ struct Tile {
     shortest_dist: u32,
 }
 
-impl std::fmt::Debug for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{} {}", self.height as char, self.shortest_dist))?;
-        Ok(())
-    }
-}
 type Field = Vec<Vec<Tile>>;
 
 fn search(items: &mut Field, y: usize, x: usize, count: u32) {
