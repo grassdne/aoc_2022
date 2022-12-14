@@ -45,11 +45,11 @@ impl Item {
         match (self, other) {
             (Int(a), Int(b)) => a.cmp(b),
             (Lst(a), Lst(b)) => a.iter()
-                                   .zip(b.iter())
-                                   .map(|(a, b)| a.cmp(b))
-                                   .skip_while(|x| x.is_eq())
-                                   .next()
-                                   .unwrap_or(a.len().cmp(&b.len())),
+                                 .zip(b.iter())
+                                 .map(|(a, b)| a.cmp(b))
+                                 .skip_while(|x| x.is_eq())
+                                 .next()
+                                 .unwrap_or(a.len().cmp(&b.len())),
 
             (Lst(_), Int(b)) => self.cmp(&Lst(vec![Int(*b)])),
             (Int(_), Lst(_)) => other.cmp(self).reverse()
