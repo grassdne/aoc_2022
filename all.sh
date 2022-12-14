@@ -48,3 +48,11 @@ cleanup
 day 10
     ./main.lua input.txt
 cleanup
+
+day 11
+    cargo run input.txt
+cleanup
+
+day 12
+    cargo run --release input.txt
+cleanup
