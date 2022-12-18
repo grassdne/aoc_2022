@@ -64,3 +64,11 @@ cleanup
 day 14
     cargo run input.txt
 cleanup
+
+day 15
+    cargo run --release input.txt
+cleanup
+
+day 16
+    ./build.sh "-O3" && ./main input.txt
+cleanup
