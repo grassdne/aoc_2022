@@ -37,6 +37,7 @@ typedef Valve ValvePool[VALVEPOOL_SIZE];
 #define FOR_EACH_VALVE(vp, id) for (int id = 0; id < VALVEPOOL_SIZE; id++) if (vp[id].state)
 
 int get_id(char *s) {
+    // (very advanced hashing algorithm)
     return (s[0]-'A') * ALPH_SIZE + (s[1]-'A') + 1;
 }
 
@@ -63,32 +64,6 @@ bool parse_valve(FILE *f, ValvePool vp) {
     vp[id].state = VALVE_CLOSED;
 
     return true;
-}
-
-void dump_id(int id) {
-    putchar((id-1) / ALPH_SIZE +'A');
-    putchar((id-1) % ALPH_SIZE + 'A');
-}
-void dump_valves(ValvePool vp) {
-    FOR_EACH_VALVE(vp, i) {
-        printf("valve=");
-        dump_id(i);
-        printf(" ;; flow rate=%d ;; state=%s ;; tunnels to ", vp[i].flow_rate, vp[i].state==VALVE_OPEN?"open":"closed");
-        for (int *p = vp[i].connected; *p != 0; ++p) {
-            dump_id(*p);
-            printf(" ");
-        }
-        printf("\n");
-    }
-}
-
-void dump_pathways(ValvePool vp) {
-    FOR_EACH_VALVE(vp, id) {
-        printf("From "), dump_id(id), putchar('\n');
-        for (int i = 0; i < vp[id].num_pathways; i++) {
-            printf("  to "), dump_id(vp[id].pathways[i].to), printf(" [dist=%d]\n", vp[id].pathways[i].dist);
-        }
-    }
 }
 
 // TODO: consider dynamic array
@@ -145,7 +120,9 @@ static inline int max(int a, int b) {
     return a > b ? a : b;
 }
 
-int perform(ValvePool vp, int id, int time_left, int indent) {
+// I really can't be bothered to abstract these two into a generic function
+
+int optimal_pressure_single(ValvePool vp, int id, int time_left) {
     int greatest = 0;
     const int n = vp[id].num_pathways;
     for (int i = 0; i < n; i++) {
@@ -153,15 +130,46 @@ int perform(ValvePool vp, int id, int time_left, int indent) {
         if (path.dist < time_left && vp[path.to].state == VALVE_CLOSED) {
             vp[path.to].state = VALVE_OPEN;
             int time = time_left - path.dist - 1;
-            int v = perform(vp, path.to, time, indent+2) + time * vp[path.to].flow_rate;
-#if 0
-            if (v > greatest) {
-                for (int i = 0; i < indent; i++) printf(" ");
-                dump_id(path.to), printf(" got flow of %d in ", v), dump_id(id), printf("\n");
-            }
-#endif
+            int v = optimal_pressure_single(vp, path.to, time) + time * vp[path.to].flow_rate;
             greatest = max(greatest, v);
             vp[path.to].state = VALVE_CLOSED;
+        }
+    }
+    return greatest;
+}
+
+int optimal_pressure_double(ValvePool vp, int loc_a, int loc_b, int time_a, int time_b) {
+    int greatest = 0;
+    const int n = vp[loc_a].num_pathways;
+    const int m = vp[loc_b].num_pathways;
+    for (int i = 0; i < n; i++) {
+        Pathway path_a = vp[loc_a].pathways[i];
+        int new_time_a = time_a - path_a.dist - 1;
+        int flow_a = new_time_a * vp[path_a.to].flow_rate;
+
+        if (path_a.dist < time_a && vp[path_a.to].state == VALVE_CLOSED) {
+            vp[path_a.to].state = VALVE_OPEN;
+            bool loc_b_path_found = false;
+            for (int j = 0; j < m; j++) {
+                Pathway path_b = vp[loc_b].pathways[j];
+                if (path_b.dist < time_b && vp[path_b.to].state == VALVE_CLOSED) {
+                    loc_b_path_found = true;
+                    vp[path_b.to].state = VALVE_OPEN;
+                    int new_time_b = time_b - path_b.dist - 1;
+                    int flow_b = new_time_b * vp[path_b.to].flow_rate;
+                    int v = optimal_pressure_double(vp, path_a.to, path_b.to, new_time_a, new_time_b)
+                        + flow_b + flow_a;
+                    greatest = max(greatest, v);
+
+                    vp[path_b.to].state = VALVE_CLOSED;
+                }
+            }
+            if (!loc_b_path_found) {
+                // go back to single
+                greatest = max(greatest, flow_a + optimal_pressure_single(vp, path_a.to, new_time_a));
+            }
+
+            vp[path_a.to].state = VALVE_CLOSED;
         }
     }
     return greatest;
@@ -188,7 +196,8 @@ int main(int argc, char **argv) {
 
     //dump_pathways(vp);
 
-    printf("%d\n", perform(vp, get_id("AA"), 30, 0));
+    printf("[PART ONE]: %d\n", optimal_pressure_single(vp, get_id("AA"), 30));
+    printf("[PART TWO]: %d\n", optimal_pressure_double(vp, get_id("AA"), get_id("AA"), 26, 26));
 
     FOR_EACH_VALVE(vp, id) free(vp[id].pathways), free(vp[id].connected);
     return 0;
