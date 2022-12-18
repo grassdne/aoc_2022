@@ -28,8 +28,6 @@ typedef struct {
     int num_pathways;
 } Valve;
 
-#define VALVE_EXISTS()
-
 #define VALVEPOOL_SIZE (ALPH_SIZE * ALPH_SIZE + 1)
 typedef Valve ValvePool[VALVEPOOL_SIZE];
 
