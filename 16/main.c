@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <string.h>
 #include <assert.h>
 
 #define ALPH_SIZE 26
 #define MAX_CONNECTED 8
+#define MAX_WORKERS 2
 
 typedef struct {
     int to;
@@ -66,7 +65,6 @@ bool parse_valve(FILE *f, ValvePool vp) {
     return true;
 }
 
-// TODO: consider dynamic array
 #define STACK_CAPACITY 64
 typedef struct {
     int arr[STACK_CAPACITY];
@@ -108,9 +106,8 @@ void explore(ValvePool vp, int valve) {
     }
 }
 
-void generate_pathways(ValvePool vp, int *valve_ids, int nvalves) {
-    for (int i = 0; i < nvalves; i++) {
-        int id = valve_ids[i];
+void generate_pathways(ValvePool vp) {
+    FOR_EACH_VALVE(vp, id) {
         vp[id].pathways = calloc(PATHWAY_CAP, sizeof(Pathway));
         explore(vp, id);
     }
@@ -120,61 +117,58 @@ static inline int max(int a, int b) {
     return a > b ? a : b;
 }
 
-// I really can't be bothered to abstract these two into a generic function
+static inline int sum(int *a, int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+        sum += a[i];
+    return sum;
+}
 
-int optimal_pressure_single(ValvePool vp, int id, int time_left) {
+static void follow_pathway(const ValvePool vp, const Pathway *paths, const int *times, int *out_time, int *out_flow, const int num_workers) {
+    for (int i = 0; i < num_workers; i++) {
+        out_time[i] = times[i] - paths[i].dist - 1;
+        out_flow[i] = out_time[i] * vp[paths[i].to].flow_rate;
+    }
+}
+
+static bool path_usable(const ValvePool vp, const Pathway path, const int cur_time) {
+    return path.dist < cur_time && vp[path.to].state == VALVE_CLOSED;
+}
+
+#define try_all_paths(vp, locs, times, num_workers) \
+    _try_all_paths((vp), (locs), (times), (num_workers), 0, (Pathway[MAX_WORKERS]){})
+
+static int _try_all_paths(ValvePool vp, const int *locs, const int *times, int num_workers, int worker, Pathway *paths) {
+    const int num_pathways = vp[locs[worker]].num_pathways;
     int greatest = 0;
-    const int n = vp[id].num_pathways;
-    for (int i = 0; i < n; i++) {
-        Pathway path = vp[id].pathways[i];
-        if (path.dist < time_left && vp[path.to].state == VALVE_CLOSED) {
-            vp[path.to].state = VALVE_OPEN;
-            int time = time_left - path.dist - 1;
-            int v = optimal_pressure_single(vp, path.to, time) + time * vp[path.to].flow_rate;
-            greatest = max(greatest, v);
-            vp[path.to].state = VALVE_CLOSED;
+    for (int i = 0; i < num_pathways; i++) {
+        paths[worker] = vp[locs[worker]].pathways[i];
+        if (path_usable(vp, paths[worker], times[worker])) {
+            vp[paths[worker].to].state = VALVE_OPEN;
+            int found = 0;
+            if (worker < num_workers-1) {
+                // Try all paths for next worker
+                found = _try_all_paths(vp, locs, times, num_workers, worker+1, paths);
+            }
+            if (found) {
+                greatest = max(greatest, found);
+            }
+            else {
+                num_workers = worker+1;
+                int new_times[MAX_WORKERS]; 
+                int new_flows[MAX_WORKERS]; 
+                int new_locs[MAX_WORKERS]; 
+                for (int i = 0; i < num_workers; i++) new_locs[i] = paths[i].to;
+                follow_pathway(vp, paths, times, new_times, new_flows, num_workers);
+                greatest = max(greatest, try_all_paths(vp, new_locs, new_times, num_workers)
+                         + sum(new_flows, num_workers));
+            }
+
+            vp[paths[worker].to].state = VALVE_CLOSED;
         }
     }
     return greatest;
 }
-
-int optimal_pressure_double(ValvePool vp, int loc_a, int loc_b, int time_a, int time_b) {
-    int greatest = 0;
-    const int n = vp[loc_a].num_pathways;
-    const int m = vp[loc_b].num_pathways;
-    for (int i = 0; i < n; i++) {
-        Pathway path_a = vp[loc_a].pathways[i];
-        int new_time_a = time_a - path_a.dist - 1;
-        int flow_a = new_time_a * vp[path_a.to].flow_rate;
-
-        if (path_a.dist < time_a && vp[path_a.to].state == VALVE_CLOSED) {
-            vp[path_a.to].state = VALVE_OPEN;
-            bool loc_b_path_found = false;
-            for (int j = 0; j < m; j++) {
-                Pathway path_b = vp[loc_b].pathways[j];
-                if (path_b.dist < time_b && vp[path_b.to].state == VALVE_CLOSED) {
-                    loc_b_path_found = true;
-                    vp[path_b.to].state = VALVE_OPEN;
-                    int new_time_b = time_b - path_b.dist - 1;
-                    int flow_b = new_time_b * vp[path_b.to].flow_rate;
-                    int v = optimal_pressure_double(vp, path_a.to, path_b.to, new_time_a, new_time_b)
-                        + flow_b + flow_a;
-                    greatest = max(greatest, v);
-
-                    vp[path_b.to].state = VALVE_CLOSED;
-                }
-            }
-            if (!loc_b_path_found) {
-                // go back to single
-                greatest = max(greatest, flow_a + optimal_pressure_single(vp, path_a.to, new_time_a));
-            }
-
-            vp[path_a.to].state = VALVE_CLOSED;
-        }
-    }
-    return greatest;
-}
-
 
 int main(int argc, char **argv) {
     if (argc < 2) return fprintf(stderr, "expected input file argument\n"), 1;
@@ -186,18 +180,13 @@ int main(int argc, char **argv) {
     while (parse_valve(f, vp));
     fclose(f);
 
-    int valve_ids[64] = {0};
-    int i = 0;
-    FOR_EACH_VALVE(vp, id) {
-        valve_ids[i++] = id;
-    }
+    generate_pathways(vp);
 
-    generate_pathways(vp, valve_ids, i);
-
-    //dump_pathways(vp);
-
-    printf("[PART ONE]: %d\n", optimal_pressure_single(vp, get_id("AA"), 30));
-    printf("[PART TWO]: %d\n", optimal_pressure_double(vp, get_id("AA"), get_id("AA"), 26, 26));
+    int locs[] = {get_id("AA"), get_id("AA")};
+    int p1_start[] = {30};
+    int p2_start[] = { 26, 26 };
+    printf("[PART ONE]: %d\n", try_all_paths(vp, locs, p1_start, 1));
+    printf("[PART TWO]: %d\n", try_all_paths(vp, locs, p2_start, 2));
 
     FOR_EACH_VALVE(vp, id) free(vp[id].pathways), free(vp[id].connected);
     return 0;
