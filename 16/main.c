@@ -145,18 +145,23 @@ static inline int max(int a, int b) {
     return a > b ? a : b;
 }
 
-int perform(ValvePool vp, int id, int time_left) {
-    time_left--;
-    if (time_left <= 0) return 0;
+int perform(ValvePool vp, int id, int time_left, int indent) {
     int greatest = 0;
-    if (vp[id].flow_rate > 0 && !vp[id].open) {
-        vp[id].open = true;
-        greatest = vp[id].flow_rate * time_left + perform(vp, id, time_left);
-        vp[id].open = false;
-    }
-    else {
-        for (int *to = vp[id].to; *to != 0; to++) {
-            greatest = max(greatest, perform(vp, *to, time_left));
+    const int n = vp[id].num_pathways;
+    for (int i = 0; i < n; i++) {
+        Pathway path = vp[id].pathways[i];
+        if (path.dist < time_left && vp[path.to].state == VALVE_CLOSED) {
+            vp[path.to].state = VALVE_OPEN;
+            int time = time_left - path.dist - 1;
+            int v = perform(vp, path.to, time, indent+2) + time * vp[path.to].flow_rate;
+#if 0
+            if (v > greatest) {
+                for (int i = 0; i < indent; i++) printf(" ");
+                dump_id(path.to), printf(" got flow of %d in ", v), dump_id(id), printf("\n");
+            }
+#endif
+            greatest = max(greatest, v);
+            vp[path.to].state = VALVE_CLOSED;
         }
     }
     return greatest;
@@ -181,9 +186,9 @@ int main(int argc, char **argv) {
 
     generate_pathways(vp, valve_ids, i);
 
-    dump_pathways(vp);
+    //dump_pathways(vp);
 
-    printf("%d\n", perform(vp, get_id("AA"), 30));
+    printf("%d\n", perform(vp, get_id("AA"), 30, 0));
 
     FOR_EACH_VALVE(vp, id) free(vp[id].pathways), free(vp[id].connected);
     return 0;
