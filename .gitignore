@@ -1,4 +1,6 @@
 */main
-*/target/*
+*/target
 */.exrc
 */.clangd
+*/bin/
+*/obj/
